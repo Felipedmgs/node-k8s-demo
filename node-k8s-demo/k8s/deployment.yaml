@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-k8s-demo
+  labels:
+    app: node-k8s-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-k8s-demo
+  template:
+    metadata:
+      labels:
+        app: node-k8s-demo
+    spec:
+      containers:
+        - name: node-k8s-demo
+          image: node-k8s-demo:1.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3000"
+            - name: BATCH_SIZE
+              value: "100"
+            - name: MEMORY_LIMIT_MB
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+                  divisor: 1Mi
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
